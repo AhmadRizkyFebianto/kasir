@@ -228,59 +228,26 @@ export function PaymentModal({ isOpen, onClose, items, total }: PaymentModalProp
             </div>
           )}
 
-          {/* Midtrans Payment */}
-          {paymentMethod === 'midtrans' && (
-            <div className="border-t border-gray-200 p-6">
-              <div className="rounded-lg bg-blue-50 border border-blue-200 p-6 text-center">
-                <div className="mx-auto mb-3 h-12 w-12 rounded-full bg-blue-100 flex items-center justify-center">
-                  <CreditCard className="h-6 w-6 text-blue-600" />
-                </div>
-                <p className="text-sm text-blue-900 mb-2">Bayar via Midtrans</p>
-                <p className="text-lg font-bold text-blue-700">{formatCurrency(total)}</p>
-                <p className="text-xs text-blue-600 mt-2">Redirect ke Midtrans payment page</p>
-              </div>
-            </div>
-          )}
-
           {/* Actions */}
           <div className="flex gap-3 border-t border-gray-200 p-6">
             <button
               type="button"
               onClick={onClose}
               className="flex-1 rounded-lg border border-gray-300 py-3 font-semibold text-gray-700 hover:bg-gray-100"
-              disabled={isPending || isMidtransProcessing}
+              disabled={isPending}
             >
               Batal
             </button>
-            
-            {paymentMethod === 'midtrans' ? (
-              <button
-                type="button"
-                onClick={handleMidtransPayment}
-                className="flex-1 rounded-lg bg-blue-600 py-3 font-semibold text-white hover:bg-blue-700 disabled:bg-gray-400 flex items-center justify-center gap-2"
-                disabled={isMidtransProcessing}
-              >
-                {isMidtransProcessing ? (
-                  <>
-                    <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
-                    <span>Redirecting...</span>
-                  </>
-                ) : (
-                  'Bayar Sekarang'
-                )}
-              </button>
-            ) : (
-              <button
-                type="submit"
-                className="flex-1 rounded-lg bg-primary-600 py-3 font-semibold text-white hover:bg-primary-700 disabled:bg-gray-400"
-                disabled={
-                  isPending ||
-                  (paymentMethod === 'cash' && Number(amountReceived) < total)
-                }
-              >
-                {isPending ? 'Memproses...' : 'Konfirmasi'}
-              </button>
-            )}
+            <button
+              type="submit"
+              className="flex-1 rounded-lg bg-primary-600 py-3 font-semibold text-white hover:bg-primary-700 disabled:bg-gray-400"
+              disabled={
+                isPending ||
+                (paymentMethod === 'cash' && Number(amountReceived) < total)
+              }
+            >
+              {isPending ? 'Memproses...' : 'Konfirmasi'}
+            </button>
           </div>
         </form>
       </div>

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getCoreClient } from '@/lib/payment/midtrans-client';
-import { updatePaymentStatus } from '@/lib/reservations/payment-queries';
+import { getPaymentByOrderId, updatePaymentWithMidtransStatus } from '@/lib/reservations/payment-queries';
+import { getTransactionStatus } from '@/lib/payment/midtrans-client';
 
 export async function POST(request: NextRequest) {
   try {
@@ -8,7 +9,6 @@ export async function POST(request: NextRequest) {
     const { order_id, status_code, gross_amount, payment_type, signature_key } = body;
 
     const core = getCoreClient();
-    const verifyStatus = await core.transaction.status(order_id);
     const isValid = core.transaction.checkNotificationStatus(order_id, signature_key);
 
     if (!isValid) {
@@ -28,11 +28,26 @@ export async function POST(request: NextRequest) {
 
     const paymentStatus = statusMap[status_code] || 'pending';
 
-    await updatePaymentStatus({
-      payment_id: order_id.replace('RES-', ''),
-      status: paymentStatus,
-      midtrans_status: status_code,
-    });
+    // Get payment by order_id
+    const { data: payment } = await getPaymentByOrderId(order_id);
+
+    if (payment) {
+      // Get transaction status from Midtrans for settlement_time
+      let settlementTime: string | undefined;
+      try {
+        const midtransStatus = await getTransactionStatus(order_id);
+        settlementTime = midtransStatus.settlementTime || midtransStatus.settlement_time;
+      } catch (e) {
+        console.error('Failed to get transaction status:', e);
+      }
+
+      await updatePaymentWithMidtransStatus({
+        payment_id: payment.id,
+        status: paymentStatus,
+        midtrans_status: status_code,
+        settlement_time: settlementTime,
+      });
+    }
 
     return NextResponse.json({ status: 'success', message: 'Payment updated' }, { status: 200 });
   } catch (error) {

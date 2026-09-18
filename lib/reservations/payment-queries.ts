@@ -80,6 +80,49 @@ export async function getPaymentById(payment_id: string) {
   return { data, error };
 }
 
+export async function getPaymentByOrderId(order_id: string) {
+  const supabase = createClient();
+  const { data, error } = await supabase
+    .from('payments')
+    .select('*')
+    .eq('order_id', order_id)
+    .order('created_at', { ascending: false })
+    .limit(1)
+    .single();
+  return { data, error };
+}
+
+export async function updatePaymentWithMidtransStatus({
+  payment_id,
+  status,
+  midtrans_status,
+  settlement_time,
+}: {
+  payment_id: string;
+  status: string;
+  midtrans_status?: string;
+  settlement_time?: string;
+}) {
+  const supabase = createClient();
+  const updates: any = {
+    status,
+    midtrans_status,
+    updated_at: new Date().toISOString(),
+  };
+  
+  if (settlement_time) {
+    updates.settlement_time = settlement_time;
+  }
+  
+  const { data, error } = await supabase
+    .from('payments')
+    .update(updates)
+    .eq('id', payment_id)
+    .select()
+    .single();
+  return { data, error };
+}
+
 export async function getPaymentsByStatus(status: string) {
   const supabase = createClient();
   const { data, error } = await supabase

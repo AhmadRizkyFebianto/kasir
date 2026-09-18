@@ -105,3 +105,133 @@ export async function processPaymentNotification(body: any) {
     settlementTime: status.settlementTime || '',
   };
 }
+
+// Transaction Actions
+
+export async function getTransactionStatus(orderId: string) {
+  const core = getCoreClient();
+  try {
+    const status = await core.transaction.status(orderId);
+    return status;
+  } catch (error) {
+    console.error('Midtrans getTransactionStatus error:', error);
+    throw error;
+  }
+}
+
+export async function approveTransaction(orderId: string) {
+  const core = getCoreClient();
+  try {
+    const status = await core.transaction.approve(orderId);
+    return status;
+  } catch (error) {
+    console.error('Midtrans approveTransaction error:', error);
+    throw error;
+  }
+}
+
+export async function denyTransaction(orderId: string) {
+  const core = getCoreClient();
+  try {
+    const status = await core.transaction.deny(orderId);
+    return status;
+  } catch (error) {
+    console.error('Midtrans denyTransaction error:', error);
+    throw error;
+  }
+}
+
+export async function cancelTransaction(orderId: string) {
+  const core = getCoreClient();
+  try {
+    const status = await core.transaction.cancel(orderId);
+    return status;
+  } catch (error) {
+    console.error('Midtrans cancelTransaction error:', error);
+    throw error;
+  }
+}
+
+export async function expireTransaction(orderId: string) {
+  const core = getCoreClient();
+  try {
+    const status = await core.transaction.expire(orderId);
+    return status;
+  } catch (error) {
+    console.error('Midtrans expireTransaction error:', error);
+    throw error;
+  }
+}
+
+export async function refundTransaction(
+  orderId: string,
+  refundCharge?: string,
+  amount?: number,
+  reason?: string
+) {
+  const core = getCoreClient();
+  try {
+    const parameter: any = {
+      refundCharge: refundCharge || 'true',
+    };
+    
+    if (amount) {
+      parameter.refund_amount = amount;
+    }
+    
+    if (reason) {
+      parameter.reason = reason;
+    }
+    
+    const status = await core.transaction.refund(orderId, parameter);
+    return status;
+  } catch (error) {
+    console.error('Midtrans refundTransaction error:', error);
+    throw error;
+  }
+}
+
+export async function createPaymentForOrder({
+  orderId,
+  amount,
+  customer,
+  items,
+}: {
+  orderId: string;
+  amount: number;
+  customer: { firstName: string; email: string; phone: string };
+  items?: { id: string; name: string; quantity: number; price: number }[];
+}) {
+  const snap = getSnapClient();
+
+  const parameter = {
+    transaction_details: {
+      order_id: orderId,
+      gross_amount: amount,
+    },
+    customer_details: {
+      first_name: customer.firstName,
+      email: customer.email,
+      phone: customer.phone,
+    },
+    item_details: items?.map((item) => ({
+      id: item.id,
+      price: item.price,
+      quantity: item.quantity,
+      name: item.name,
+    })),
+    callbacks: {
+      finish: `${process.env.NEXT_PUBLIC_APP_URL}/payment/status?order_id={order_id}`,
+      error: `${process.env.NEXT_PUBLIC_APP_URL}/payment/error?order_id={order_id}`,
+      pending: `${process.env.NEXT_PUBLIC_APP_URL}/payment/pending?order_id={order_id}`,
+    },
+  };
+
+  try {
+    const transaction = await snap.createTransaction(parameter);
+    return { token: transaction.token, redirectUrl: transaction.redirect_url };
+  } catch (error) {
+    console.error('Midtrans createPaymentForOrder error:', error);
+    throw error;
+  }
+}
