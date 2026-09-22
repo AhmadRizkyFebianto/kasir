@@ -1,10 +1,10 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { motion } from 'framer-motion';
-import { Calendar, Clock, AlertCircle } from 'lucide-react';
-import { createReservation } from '@/lib/reservations/actions';
-import { formatCurrency } from '@/lib/utils';
+import { useState } from "react";
+import { motion } from "framer-motion";
+import { Calendar, Clock, AlertCircle } from "lucide-react";
+import { createReservation } from "@/lib/reservations/actions";
+import { formatCurrency } from "@/lib/utils";
 
 interface BookingFormProps {
   place: {
@@ -15,10 +15,10 @@ interface BookingFormProps {
 }
 
 export function BookingForm({ place }: BookingFormProps) {
-  const [date, setDate] = useState('');
-  const [startTime, setStartTime] = useState('');
-  const [endTime, setEndTime] = useState('');
-  const [notes, setNotes] = useState('');
+  const [date, setDate] = useState("");
+  const [startTime, setStartTime] = useState("");
+  const [endTime, setEndTime] = useState("");
+  const [notes, setNotes] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
@@ -38,15 +38,14 @@ export function BookingForm({ place }: BookingFormProps) {
     setError(null);
     setLoading(true);
 
-    // Validation
     if (!date || !startTime || !endTime) {
-      setError('Mohon lengkapi tanggal dan waktu');
+      setError("Mohon lengkapi tanggal dan waktu");
       setLoading(false);
       return;
     }
 
     if (endTime <= startTime) {
-      setError('Waktu selesai harus lebih dari waktu mulai');
+      setError("Waktu selesai harus lebih dari waktu mulai");
       setLoading(false);
       return;
     }
@@ -56,19 +55,19 @@ export function BookingForm({ place }: BookingFormProps) {
     today.setHours(0, 0, 0, 0);
 
     if (selectedDate < today) {
-      setError('Tidak dapat memesan tanggal yang sudah lewat');
+      setError("Tidak dapat memesan tanggal yang sudah lewat");
       setLoading(false);
       return;
     }
 
     const formData = new FormData();
-    formData.append('place_id', place.id);
+    formData.append("place_id", place.id);
     formData.append(
-      'start_time',
+      "start_time",
       new Date(`${date}T${startTime}`).toISOString()
     );
-    formData.append('end_time', new Date(`${date}T${endTime}`).toISOString());
-    formData.append('notes', notes);
+    formData.append("end_time", new Date(`${date}T${endTime}`).toISOString());
+    formData.append("notes", notes);
 
     const result = await createReservation(formData);
 
@@ -76,14 +75,13 @@ export function BookingForm({ place }: BookingFormProps) {
       setError(result.error);
       setLoading(false);
     }
-    // On success, redirect is handled by createReservation
   };
 
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      className="rounded-xl bg-white p-6 shadow-lg"
+      className="rounded-lg border-2 border-slate-200 bg-white p-6 shadow-md"
     >
       <h2 className="mb-6 text-2xl font-bold text-gray-900">
         Buat Reservasi
@@ -94,14 +92,13 @@ export function BookingForm({ place }: BookingFormProps) {
           <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
-            className="flex items-start gap-3 rounded-lg bg-red-50 p-4"
+            className="flex items-start gap-3 rounded-lg bg-red-50 border border-red-200 p-4"
           >
             <AlertCircle className="h-5 w-5 text-red-600 flex-shrink-0 mt-0.5" />
             <p className="text-sm text-red-800">{error}</p>
           </motion.div>
         )}
 
-        {/* Date */}
         <div>
           <label className="mb-2 flex items-center gap-2 text-sm font-medium text-gray-700">
             <Calendar className="h-4 w-4" />
@@ -111,13 +108,11 @@ export function BookingForm({ place }: BookingFormProps) {
             type="date"
             value={date}
             onChange={(e) => setDate(e.target.value)}
-            min={new Date().toISOString().split('T')[0]}
             required
-            className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500"
+            className="w-full rounded-lg border border-slate-300 px-4 py-2 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200"
           />
         </div>
 
-        {/* Time */}
         <div className="grid grid-cols-2 gap-4">
           <div>
             <label className="mb-2 flex items-center gap-2 text-sm font-medium text-gray-700">
@@ -129,7 +124,7 @@ export function BookingForm({ place }: BookingFormProps) {
               value={startTime}
               onChange={(e) => setStartTime(e.target.value)}
               required
-              className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500"
+              className="w-full rounded-lg border border-slate-300 px-4 py-2 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200"
             />
           </div>
 
@@ -143,12 +138,11 @@ export function BookingForm({ place }: BookingFormProps) {
               value={endTime}
               onChange={(e) => setEndTime(e.target.value)}
               required
-              className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500"
+              className="w-full rounded-lg border border-slate-300 px-4 py-2 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200"
             />
           </div>
         </div>
 
-        {/* Notes */}
         <div>
           <label className="mb-2 block text-sm font-medium text-gray-700">
             Catatan (Opsional)
@@ -158,33 +152,32 @@ export function BookingForm({ place }: BookingFormProps) {
             onChange={(e) => setNotes(e.target.value)}
             rows={3}
             placeholder="Tambahkan catatan untuk reservasi Anda..."
-            className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500"
+            className="w-full rounded-lg border border-slate-300 px-4 py-2 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200"
           />
         </div>
 
-        {/* Summary */}
         {duration > 0 && (
           <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
-            className="rounded-lg bg-primary-50 p-4"
+            className="rounded-lg bg-blue-50 border border-blue-200 p-4"
           >
             <div className="space-y-2 text-sm">
               <div className="flex justify-between">
-                <span className="text-gray-600">Durasi:</span>
+                <span className="text-gray-600 font-medium">Durasi:</span>
                 <span className="font-medium text-gray-900">
                   {duration} jam
                 </span>
               </div>
               <div className="flex justify-between">
-                <span className="text-gray-600">Harga per jam:</span>
+                <span className="text-gray-600 font-medium">Harga per jam:</span>
                 <span className="font-medium text-gray-900">
                   {formatCurrency(place.price_per_hour)}
                 </span>
               </div>
-              <div className="flex justify-between border-t border-primary-100 pt-2">
+              <div className="flex justify-between border-t border-blue-200 pt-2">
                 <span className="font-medium text-gray-900">Total:</span>
-                <span className="text-lg font-bold text-primary-600">
+                <span className="text-lg font-bold text-blue-600">
                   {formatCurrency(totalAmount)}
                 </span>
               </div>
@@ -192,13 +185,12 @@ export function BookingForm({ place }: BookingFormProps) {
           </motion.div>
         )}
 
-        {/* Submit Button */}
         <button
           type="submit"
           disabled={loading || !date || !startTime || !endTime}
-          className="w-full rounded-lg bg-primary-600 px-4 py-3 font-medium text-white transition-colors hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+          className="w-full rounded-lg bg-blue-600 px-4 py-3 font-medium text-white transition-colors hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
         >
-          {loading ? 'Memproses...' : 'Buat Reservasi'}
+          {loading ? "Memproses..." : "Buat Reservasi"}
         </button>
 
         <p className="text-center text-xs text-gray-500">

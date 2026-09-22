@@ -1,5 +1,5 @@
 import { Suspense } from 'react';
-import { notFound } from 'next/navigation';
+import { notFound, redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
 import { formatCurrency } from '@/lib/utils';
 import Link from 'next/link';
@@ -31,14 +31,14 @@ async function ReservationDetailPage({ params }: { params: { id: string } }) {
   
   const amount = reservation.total_amount * 1.11;
 
-  const handleMidtransPayment = async (formData: FormData) => {
+  const handleMidtransPayment = async (formData: FormData): Promise<void> => {
     'use server';
     const guestName = formData.get('guestName') as string;
     const guestEmail = formData.get('guestEmail') as string;
     const guestPhone = formData.get('guestPhone') as string;
     
     const redirectUrl = `/payment/pay?reservation_id=${params.id}&guest_name=${encodeURIComponent(guestName)}&guest_email=${encodeURIComponent(guestEmail)}&guest_phone=${encodeURIComponent(guestPhone)}&amount=${amount}`;
-    return { redirectUrl };
+    redirect(redirectUrl);
   };
 
   return (
@@ -74,7 +74,7 @@ async function ReservationDetailPage({ params }: { params: { id: string } }) {
           Kembali
         </Link>
         {paymentStatus === 'paid' && (
-          <Link href={`/payment/status?order_id=${reservation.payments[0]?.order_id || reservation.payments[0]?.id}`} className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700">
+          <Link href={`/payment/status?order_id=${(reservation.payments[0] as { order_id?: string; id?: string })?.order_id || (reservation.payments[0] as { order_id?: string; id?: string })?.id}`} className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700">
             Lihat Status Pembayaran
           </Link>
         )}

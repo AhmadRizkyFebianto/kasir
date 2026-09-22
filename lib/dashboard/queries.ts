@@ -66,6 +66,7 @@ export async function getRecentReservations(limit = 10) {
     .from('reservations')
     .select(`
       id,
+      reservation_code,
       start_time,
       end_time,
       status,
