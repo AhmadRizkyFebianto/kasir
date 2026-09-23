@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -12,6 +12,7 @@ import {
   BarChart3,
   Settings,
   LogOut,
+  FileText,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -36,6 +37,12 @@ const navigation = [
     name: "Reservasi",
     href: "/dashboard/reservations",
     icon: Calendar,
+    roles: ["admin", "kasir"],
+  },
+  {
+    name: "Orders",
+    href: "/dashboard/orders",
+    icon: FileText,
     roles: ["admin", "kasir"],
   },
   {

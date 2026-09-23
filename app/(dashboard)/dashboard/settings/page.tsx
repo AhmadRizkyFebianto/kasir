@@ -12,38 +12,34 @@ async function updateSettings(formData: FormData): Promise<void> {
     return;
   }
 
-  try {
-    const storeName = String(formData.get("storeName") || "");
-    const storeAddress = String(formData.get("storeAddress") || "");
-    const storePhone = String(formData.get("storePhone") || "");
-    const midtransServerKey = String(formData.get("midtransServerKey") || "");
-    const midtransClientKey = String(formData.get("midtransClientKey") || "");
-    const isProduction = formData.get("isProduction") === "on";
-    const openingTime = String(formData.get("openingTime") || "");
-    const closingTime = String(formData.get("closingTime") || "");
-    const defaultDiscount = Number(formData.get("defaultDiscount") || 0);
+  const storeName = String(formData.get("storeName") || "");
+  const storeAddress = String(formData.get("storeAddress") || "");
+  const storePhone = String(formData.get("storePhone") || "");
+  const midtransServerKey = String(formData.get("midtransServerKey") || "");
+  const midtransClientKey = String(formData.get("midtransClientKey") || "");
+  const isProduction = formData.get("isProduction") === "on";
+  const openingTime = String(formData.get("openingTime") || "");
+  const closingTime = String(formData.get("closingTime") || "");
+  const defaultDiscount = Number(formData.get("defaultDiscount") || 0);
 
-    // Update store settings
-    await supabase
-      .from("store_settings")
-      .upsert({
-        store_name: storeName,
-        store_address: storeAddress,
-        store_phone: storePhone,
-        midtrans_server_key: midtransServerKey,
-        midtrans_client_key: midtransClientKey,
-        is_production: isProduction,
-        opening_time: openingTime,
-        closing_time: closingTime,
-        default_discount: defaultDiscount,
-        updated_at: new Date().toISOString()
-      });
+  // Update store settings
+  await supabase
+    .from("store_settings")
+    .upsert({
+      store_name: storeName,
+      store_address: storeAddress,
+      store_phone: storePhone,
+      midtrans_server_key: midtransServerKey,
+      midtrans_client_key: midtransClientKey,
+      is_production: isProduction,
+      opening_time: openingTime,
+      closing_time: closingTime,
+      default_discount: defaultDiscount,
+      updated_at: new Date().toISOString()
+    });
 
-    revalidatePath("/dashboard/settings");
-    redirect("/dashboard/settings?success=1");
-  } catch (error) {
-    console.error("Update settings error:", error);
-  }
+  revalidatePath("/dashboard/settings");
+  redirect("/dashboard/settings?success=1");
 }
 
 export default async function SettingsPage() {

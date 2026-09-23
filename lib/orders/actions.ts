@@ -82,7 +82,7 @@ export async function getOrder(orderId: string) {
       total_amount,
       status,
       created_at,
-      order_items (id, quantity, price, subtotal, products (name)),
+      order_items (id, quantity, price, subtotal, product_id, products (name)),
       payments (id, amount, method, status),
       profiles:kasir_id (full_name)
     `)
