@@ -15,8 +15,8 @@ const jetbrainsMono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  title: 'Kasir - POS & Reservation System',
-  description: 'Modern Point of Sale and Place Reservation System for restaurants, cafes, and entertainment venues',
+  title: 'Kasir Pro - Sistem POS Modern',
+  description: 'Sistem Point of Sale lengkap untuk bisnis ritel, restoran, dan cafe. POS cepat, pembayaran online, cetak struk, dan laporan otomatis.',
 };
 
 export default function RootLayout({

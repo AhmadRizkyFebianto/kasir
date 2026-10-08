@@ -1,10 +1,10 @@
-# Kasir - POS & Reservation System
+# Kasir Pro - POS System
 
-Modern Point of Sale and Place Reservation System built with Next.js 15, TypeScript, Tailwind CSS, and Supabase.
+Modern Point of Sale System built with Next.js 15, TypeScript, Tailwind CSS, and Supabase.
 
 ## 🎯 Project Overview
 
-Kasir is a comprehensive web application designed for businesses such as restaurants, cafes, billiard halls, karaoke venues, coworking spaces, and entertainment venues. The system provides both customer-facing reservation features and admin/cashier management tools.
+Kasir Pro is a comprehensive web application designed for retail businesses such as stores, warungs, cafes, and restaurants. The system provides POS features for transaction management, payment processing, and business analytics.
 
 ## 🏗️ Architecture
 
@@ -13,7 +13,6 @@ Kasir is a comprehensive web application designed for businesses such as restaur
 - **TypeScript** - Type-safe development
 - **Tailwind CSS** - Utility-first styling
 - **Framer Motion** - Smooth animations
-- **Shadcn/ui** - Reusable UI components
 
 ### Backend
 - **Next.js Server Actions** - Server-side logic
@@ -26,12 +25,6 @@ Kasir is a comprehensive web application designed for businesses such as restaur
 ### Authentication
 - **Supabase Auth** - User authentication and authorization
 
-### Storage
-- **Supabase Storage** - File and image storage
-
-### Realtime
-- **Supabase Realtime** - Live updates for place availability
-
 ### Payment Gateway
 - **Midtrans** - Indonesian payment gateway
   - QRIS support
@@ -42,20 +35,19 @@ Kasir is a comprehensive web application designed for businesses such as restaur
 ## 📋 Features
 
 ### Customer Features
-- Browse available places with real-time status
-- Make reservations with date/time selection
+- Browse available products
+- Make purchases via POS
 - Online payment via multiple methods
-- Cash payment option at venue
-- Reservation history and management
+- Cash payment option
+- Payment history
 
 ### Admin/Kasir Features
 - Dashboard with analytics
-- Place management
-- Product/menu management
+- Product management
 - POS (Point of Sale) system
 - Payment processing
-- Reservation management
 - Reports and analytics
+- User management
 
 ## 🚀 Getting Started
 
@@ -106,29 +98,30 @@ Open [http://localhost:3000](http://localhost:3000) to view the application.
 kasir/
 ├── app/                      # Next.js App Router
 │   ├── (auth)/              # Authentication routes
-│   ├── (customer)/          # Customer-facing pages
-│   ├── admin/               # Admin dashboard
-│   ├── kasir/               # Cashier interface
+│   ├── (dashboard)/         # Admin dashboard
 │   ├── api/                 # API routes
 │   ├── layout.tsx           # Root layout
 │   ├── page.tsx             # Home page
 │   └── globals.css          # Global styles
 ├── components/              # React components
-│   ├── ui/                  # Shadcn/ui components
-│   ├── customer/            # Customer components
-│   ├── admin/               # Admin components
-│   └── kasir/               # Cashier components
+│   ├── dashboard/           # Dashboard components
+│   └── pos/                 # POS components
 ├── lib/                     # Utility functions
 │   ├── supabase/           # Supabase clients
+│   ├── auth/               # Auth actions
+│   ├── dashboard/          # Dashboard queries
+│   ├── orders/             # Order actions
+│   ├── products/           # Product actions
+│   ├── reports/            # Report queries
+│   ├── users/              # User actions
 │   └── utils.ts            # Helper functions
 ├── types/                   # TypeScript types
 │   └── database.types.ts   # Database types
 ├── docs/                    # Documentation
-│   ├── database-schema.md  # Database schema
-│   ├── PRD.md              # Product requirements
-│   └── design.md           # Design system
+│   ├── PRD_POS.md          # Product requirements (POS-only)
+│   ├── design.md           # Design system
+│   └── PROJECT-SETUP.md    # Setup guide
 ├── public/                  # Static assets
-├── middleware.ts            # Next.js middleware
 ├── tailwind.config.ts       # Tailwind configuration
 ├── next.config.ts           # Next.js configuration
 └── tsconfig.json            # TypeScript configuration
@@ -138,9 +131,9 @@ kasir/
 
 Detailed documentation is available in the `/docs` folder:
 
-- **[Database Schema](docs/database-schema.md)** - Complete database design
-- **[Product Requirements](docs/PRD.md)** - Feature specifications and user flows
+- **[Product Requirements](docs/PRD_POS.md)** - Feature specifications and user flows
 - **[Design System](docs/design.md)** - UI/UX guidelines and component architecture
+- **[Setup Guide](docs/PROJECT-SETUP.md)** - How to setup the project
 
 ## 🔒 Security
 

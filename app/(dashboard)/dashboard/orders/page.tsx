@@ -1,4 +1,4 @@
-import { Suspense } from 'react';
+﻿import { Suspense } from 'react';
 import { Search, Filter, DollarSign, ChevronRight } from 'lucide-react';
 import { getOrders, getOrdersCount } from '@/lib/orders/queries';
 import { formatCurrency } from '@/lib/utils';

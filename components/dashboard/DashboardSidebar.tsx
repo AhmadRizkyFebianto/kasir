@@ -1,12 +1,10 @@
-﻿"use client";
+"use client";
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
   LayoutDashboard,
-  ShoppingCart,
-  Calendar,
-  MapPin,
+  ShoppingBag,
   Package,
   Users,
   BarChart3,
@@ -30,13 +28,7 @@ const navigation = [
   {
     name: "POS",
     href: "/dashboard/pos",
-    icon: ShoppingCart,
-    roles: ["admin", "kasir"],
-  },
-  {
-    name: "Reservasi",
-    href: "/dashboard/reservations",
-    icon: Calendar,
+    icon: ShoppingBag,
     roles: ["admin", "kasir"],
   },
   {
@@ -46,27 +38,21 @@ const navigation = [
     roles: ["admin", "kasir"],
   },
   {
-    name: "Tempat",
-    href: "/dashboard/places",
-    icon: MapPin,
-    roles: ["admin"],
-  },
-  {
     name: "Produk",
     href: "/dashboard/products",
     icon: Package,
     roles: ["admin"],
   },
   {
-    name: "Pengguna",
-    href: "/dashboard/users",
-    icon: Users,
-    roles: ["admin"],
-  },
-  {
     name: "Laporan",
     href: "/dashboard/reports",
     icon: BarChart3,
+    roles: ["admin", "kasir"],
+  },
+  {
+    name: "Pengguna",
+    href: "/dashboard/users",
+    icon: Users,
     roles: ["admin"],
   },
   {
@@ -88,7 +74,7 @@ export function DashboardSidebar({ role }: DashboardSidebarProps) {
     <div className="flex w-64 flex-col border-r-2 border-black bg-white">
       <div className="flex h-16 items-center px-6">
         <Link href="/dashboard" className="flex items-center gap-2">
-          <ShoppingCart className="h-8 w-8 text-blue-600" />
+          <ShoppingBag className="h-8 w-8 text-blue-600" />
           <span className="text-xl font-bold text-black">Kasir Pro</span>
         </Link>
       </div>
