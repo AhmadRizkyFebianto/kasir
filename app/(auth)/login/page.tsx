@@ -93,14 +93,20 @@ export default function LoginPage() {
             </button>
           </div>
 
-          <div className="text-center text-sm text-gray-600">
-            <p className="mt-4">Demo Accounts:</p>
-            <p className="mt-2">
-              <strong>Admin:</strong> admin@kasir.com / password123
-            </p>
-            <p>
-              <strong>Kasir:</strong> kasir@kasir.com / password123
-            </p>
+          <div className="rounded-md bg-amber-50 p-4">
+            <div className="flex">
+              <div className="ml-3">
+                <h3 className="text-sm font-medium text-amber-800">
+                  Demo Account Belum Dibuat
+                </h3>
+                <div className="mt-2 text-sm text-amber-700">
+                  <p>Account demo (admin/kasir) belum tersedia di database.</p>
+                  <p className="mt-1">
+                    Daftar akun baru di bawah atau buat akun demo manual via Supabase Dashboard.
+                  </p>
+                </div>
+              </div>
+            </div>
           </div>
         </form>
       </div>
