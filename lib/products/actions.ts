@@ -148,3 +148,119 @@ export async function getProductCategories() {
 
   return data;
 }
+
+export async function createCategory(formData: FormData): Promise<void | undefined> {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+
+  if (!user) {
+    console.error('Unauthorized category creation attempt');
+    return;
+  }
+
+  try {
+    const name = String(formData.get('name') || '');
+    const description = String(formData.get('description') || '');
+
+    if (!name) {
+      console.error('Validation error: category name is required');
+      return;
+    }
+
+    const { error } = await supabase
+      .from('product_categories')
+      .insert({ name, description });
+
+    if (error) {
+      console.error('Create category error:', error);
+      return;
+    }
+
+    revalidatePath('/dashboard/categories');
+  } catch (error) {
+    console.error('Create category error:', error);
+  }
+}
+
+export async function updateCategory(formData: FormData): Promise<void | undefined> {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+
+  if (!user) {
+    console.error('Unauthorized category update attempt');
+    return;
+  }
+
+  try {
+    const id = String(formData.get('id') || '');
+    const name = String(formData.get('name') || '');
+    const description = String(formData.get('description') || '');
+
+    if (!id) {
+      console.error('Validation error: category ID is required');
+      return;
+    }
+
+    const { error } = await supabase
+      .from('product_categories')
+      .update({ name, description })
+      .eq('id', id);
+
+    if (error) {
+      console.error('Update category error:', error);
+      return;
+    }
+
+    revalidatePath('/dashboard/categories');
+  } catch (error) {
+    console.error('Update category error:', error);
+  }
+}
+
+export async function deleteCategory(id: string): Promise<void> {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+
+  if (!user) {
+    console.error('Unauthorized category deletion attempt');
+    return;
+  }
+
+  try {
+    const { error } = await supabase
+      .from('product_categories')
+      .delete()
+      .eq('id', id);
+
+    if (error) {
+      console.error('Delete category error:', error);
+    }
+
+    revalidatePath('/dashboard/categories');
+  } catch (error) {
+    console.error('Delete category error:', error);
+  }
+}
+
+export async function getCategory(id: string) {
+  const supabase = await createClient();
+
+  const { data } = await supabase
+    .from('product_categories')
+    .select('*')
+    .eq('id', id)
+    .single();
+
+  return data;
+}
+
+export async function getCategories() {
+  const supabase = await createClient();
+
+  const { data } = await supabase
+    .from('product_categories')
+    .select('*')
+    .order('name', { ascending: true });
+
+  return data;
+}
