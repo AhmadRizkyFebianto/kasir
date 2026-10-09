@@ -11,13 +11,14 @@ interface PaymentModalProps {
   onClose: () => void;
   items: CartItem[];
   total: number;
+  onCheckout?: (paymentMethod: string, customer?: any) => void;
 }
 
-export function PaymentModal({ isOpen, onClose, items, total }: PaymentModalProps) {
+export function PaymentModal({ isOpen, onClose, items, total, onCheckout }: PaymentModalProps) {
   const [paymentMethod, setPaymentMethod] = useState<'cash' | 'qris' | 'bank_transfer' | 'midtrans'>('cash');
   const [amountReceived, setAmountReceived] = useState('');
   const [isPending, startTransition] = useTransition();
-  const [isMidtransProcessing, setIsMidtransProcessing] = useState(false);
+  const [customer, setCustomer] = useState({ firstName: '', email: '', phone: '' });
 
   if (!isOpen) return null;
 
@@ -38,6 +39,11 @@ export function PaymentModal({ isOpen, onClose, items, total }: PaymentModalProp
       return;
     }
 
+    if (onCheckout) {
+      onCheckout(paymentMethod, customer);
+      return;
+    }
+
     const formData = new FormData();
     formData.append('items', JSON.stringify(items));
     formData.append('payment_method', paymentMethod);
@@ -49,38 +55,6 @@ export function PaymentModal({ isOpen, onClose, items, total }: PaymentModalProp
     startTransition(() => {
       createOrder(formData);
     });
-  };
-
-  const handleMidtransPayment = async () => {
-    setIsMidtransProcessing(true);
-    
-    // Create order first
-    const formData = new FormData();
-    formData.append('items', JSON.stringify(items));
-    formData.append('payment_method', 'bank_transfer'); // Default to bank_transfer
-    
-    try {
-      // Create the order first
-      const response = await fetch('/api/orders', {
-        method: 'POST',
-        body: formData,
-      });
-      
-      const result = await response.json();
-      
-      if (result.orderId) {
-        // Redirect to Midtrans payment page
-        const midtransUrl = `/payment/pay?order_id=${result.orderId}&guest_name=${encodeURIComponent('Guest')}&guest_email=${encodeURIComponent('')}&guest_phone=${encodeURIComponent('')}&amount=${total}`;
-        window.location.href = midtransUrl;
-      } else {
-        alert('Failed to create order');
-      }
-    } catch (error) {
-      console.error('Midtrans payment error:', error);
-      alert('Failed to process payment');
-    } finally {
-      setIsMidtransProcessing(false);
-    }
   };
 
   return (
@@ -98,113 +72,117 @@ export function PaymentModal({ isOpen, onClose, items, total }: PaymentModalProp
         </div>
 
         <form onSubmit={handleSubmit}>
-          {/* Total */}
-          <div className="border-b border-gray-200 bg-gray-50 p-6">
-            <p className="text-sm text-gray-600">Total Pembayaran</p>
-            <p className="mt-1 text-3xl font-bold text-gray-900">
-              {formatCurrency(total)}
-            </p>
-          </div>
+          {/* Customer Info for Midtrans */}
+          {paymentMethod === 'midtrans' && (
+            <div className="border-b border-gray-200 p-6">
+              <h3 className="mb-4 font-medium text-gray-900">Data Customer</h3>
+              <div className="space-y-3">
+                <div>
+                  <label className="mb-1 block text-sm text-gray-600">Nama</label>
+                  <input
+                    type="text"
+                    value={customer.firstName}
+                    onChange={(e) => setCustomer({ ...customer, firstName: e.target.value })}
+                    placeholder="Nama customer"
+                    className="w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-blue-500 focus:outline-none"
+                  />
+                </div>
+                <div>
+                  <label className="mb-1 block text-sm text-gray-600">Email</label>
+                  <input
+                    type="email"
+                    value={customer.email}
+                    onChange={(e) => setCustomer({ ...customer, email: e.target.value })}
+                    placeholder="Email customer"
+                    className="w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-blue-500 focus:outline-none"
+                  />
+                </div>
+                <div>
+                  <label className="mb-1 block text-sm text-gray-600">No HP</label>
+                  <input
+                    type="tel"
+                    value={customer.phone}
+                    onChange={(e) => setCustomer({ ...customer, phone: e.target.value })}
+                    placeholder="08123456789"
+                    className="w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-blue-500 focus:outline-none"
+                  />
+                </div>
+              </div>
+            </div>
+          )}
 
-          {/* Payment Method */}
-          <div className="p-6">
-            <label className="text-sm font-medium text-gray-900">
-              Metode Pembayaran
-            </label>
-            <div className="mt-3 grid grid-cols-3 gap-3">
-              <button
-                type="button"
-                onClick={() => setPaymentMethod('cash')}
-                className={`flex flex-col items-center gap-2 rounded-lg border-2 p-4 transition-colors ${
-                  paymentMethod === 'cash'
-                    ? 'border-primary-600 bg-primary-50'
-                    : 'border-gray-200 hover:border-gray-300'
-                }`}
-              >
-                <Banknote className="h-6 w-6" />
-                <span className="text-sm font-medium">Tunai</span>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => setPaymentMethod('qris')}
-                className={`flex flex-col items-center gap-2 rounded-lg border-2 p-4 transition-colors ${
-                  paymentMethod === 'qris'
-                    ? 'border-primary-600 bg-primary-50'
-                    : 'border-gray-200 hover:border-gray-300'
-                }`}
-              >
-                <CreditCard className="h-6 w-6" />
-                <span className="text-sm font-medium">QRIS</span>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => setPaymentMethod('bank_transfer')}
-                className={`flex flex-col items-center gap-2 rounded-lg border-2 p-4 transition-colors ${
-                  paymentMethod === 'bank_transfer'
-                    ? 'border-primary-600 bg-primary-50'
-                    : 'border-gray-200 hover:border-gray-300'
-                }`}
-              >
-                <Wallet className="h-6 w-6" />
-                <span className="text-sm font-medium">Online</span>
-              </button>
+          {/* Payment Method Selection */}
+          <div className="border-b border-gray-200 p-6">
+            <h3 className="mb-4 font-medium text-gray-900">Metode Pembayaran</h3>
+            <div className="grid grid-cols-2 gap-3">
+              {[
+                { id: 'cash', label: 'Tunai', icon: Banknote },
+                { id: 'qris', label: 'QRIS', icon: Wallet },
+                { id: 'bank_transfer', label: 'Transfer', icon: Banknote },
+                { id: 'midtrans', label: 'Midtrans', icon: CreditCard },
+              ].map((method) => (
+                <button
+                  key={method.id}
+                  type="button"
+                  onClick={() => setPaymentMethod(method.id as any)}
+                  className={`flex items-center justify-center gap-2 rounded-lg border-2 px-4 py-3 transition-all ${
+                    paymentMethod === method.id
+                      ? 'border-blue-600 bg-blue-50 text-blue-700'
+                      : 'border-gray-200 hover:border-gray-300'
+                  }`}
+                >
+                  <method.icon className="h-5 w-5" />
+                  <span className="font-medium">{method.label}</span>
+                </button>
+              ))}
             </div>
           </div>
 
-          {/* Cash Payment Details */}
+          {/* Cash Payment Fields */}
           {paymentMethod === 'cash' && (
-            <div className="border-t border-gray-200 p-6">
-              <label className="text-sm font-medium text-gray-900">
-                Uang Diterima
-              </label>
-              <input
-                type="number"
-                value={amountReceived}
-                onChange={(e) => setAmountReceived(e.target.value)}
-                placeholder="Masukkan jumlah uang"
-                className="mt-2 w-full rounded-lg border border-gray-300 px-4 py-3 text-lg font-semibold focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500"
-                required
-              />
+            <div className="border-b border-gray-200 p-6">
+              <div className="mb-4">
+                <label className="mb-1 block text-sm font-medium text-gray-700">Jumlah Uang Diterima</label>
+                <div className="relative">
+                  <input
+                    type="number"
+                    value={amountReceived}
+                    onChange={(e) => setAmountReceived(e.target.value)}
+                    placeholder="Masukkan jumlah uang"
+                    className="w-full rounded-lg border border-gray-300 px-3 py-3 pl-4 pr-16 text-lg font-bold focus:border-blue-500 focus:outline-none"
+                  />
+                  <span className="absolute right-3 top-1/2 -translate-y-1/2 font-semibold text-gray-600">
+                    {formatCurrency(Number(amountReceived) || 0)}
+                  </span>
+                </div>
+                {Number(amountReceived) > 0 && (
+                  <div className="mt-2 text-lg">
+                    <span className="text-gray-600">Kembali: </span>
+                    <span className={`font-bold ${change >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                      {formatCurrency(change)}
+                    </span>
+                  </div>
+                )}
+              </div>
 
-              {/* Quick Amount Buttons */}
-              <div className="mt-3 grid grid-cols-4 gap-2">
-                {quickAmounts.map((amount) => (
+              <div className="flex flex-wrap gap-2">
+                {quickAmounts.map((quick) => (
                   <button
-                    key={amount.value}
+                    key={quick.label}
                     type="button"
-                    onClick={() => setAmountReceived(amount.value.toString())}
-                    className="rounded-lg border border-gray-300 py-2 text-sm font-medium hover:bg-gray-100"
+                    onClick={() => setAmountReceived(quick.value.toString())}
+                    className="rounded-lg bg-gray-100 px-3 py-1 text-sm font-medium text-gray-700 hover:bg-gray-200"
                   >
-                    {amount.label}
+                    {quick.label}
                   </button>
                 ))}
               </div>
-
-              {/* Change */}
-              {amountReceived && Number(amountReceived) >= total && (
-                <div className="mt-4 rounded-lg bg-green-50 p-4">
-                  <p className="text-sm text-green-800">Kembalian</p>
-                  <p className="mt-1 text-2xl font-bold text-green-900">
-                    {formatCurrency(change)}
-                  </p>
-                </div>
-              )}
-
-              {amountReceived && Number(amountReceived) < total && (
-                <div className="mt-4 rounded-lg bg-red-50 p-4">
-                  <p className="text-sm text-red-800">
-                    Uang kurang {formatCurrency(total - Number(amountReceived))}
-                  </p>
-                </div>
-              )}
             </div>
           )}
 
           {/* QRIS Payment */}
           {paymentMethod === 'qris' && (
-            <div className="border-t border-gray-200 p-6">
+            <div className="border-b border-gray-200 p-6">
               <div className="rounded-lg bg-gray-100 p-8 text-center">
                 <p className="text-sm text-gray-600">
                   Scan QRIS code dengan aplikasi pembayaran Anda
@@ -221,7 +199,7 @@ export function PaymentModal({ isOpen, onClose, items, total }: PaymentModalProp
 
           {/* Transfer Payment */}
           {paymentMethod === 'bank_transfer' && (
-            <div className="border-t border-gray-200 p-6">
+            <div className="border-b border-gray-200 p-6">
               <p className="text-sm text-gray-600">
                 Catat pembayaran transfer manual setelah dana diterima
               </p>
@@ -230,7 +208,7 @@ export function PaymentModal({ isOpen, onClose, items, total }: PaymentModalProp
 
           {/* Midtrans Payment */}
           {paymentMethod === 'midtrans' && (
-            <div className="border-t border-gray-200 p-6">
+            <div className="border-b border-gray-200 p-6">
               <div className="rounded-lg bg-blue-50 border border-blue-200 p-6 text-center">
                 <div className="mx-auto mb-3 h-12 w-12 rounded-full bg-blue-100 flex items-center justify-center">
                   <CreditCard className="h-6 w-6 text-blue-600" />
@@ -248,39 +226,18 @@ export function PaymentModal({ isOpen, onClose, items, total }: PaymentModalProp
               type="button"
               onClick={onClose}
               className="flex-1 rounded-lg border border-gray-300 py-3 font-semibold text-gray-700 hover:bg-gray-100"
-              disabled={isPending || isMidtransProcessing}
+              disabled={isPending}
             >
               Batal
             </button>
             
-            {paymentMethod === 'midtrans' ? (
-              <button
-                type="button"
-                onClick={handleMidtransPayment}
-                className="flex-1 rounded-lg bg-blue-600 py-3 font-semibold text-white hover:bg-blue-700 disabled:bg-gray-400 flex items-center justify-center gap-2"
-                disabled={isMidtransProcessing}
-              >
-                {isMidtransProcessing ? (
-                  <>
-                    <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
-                    <span>Redirecting...</span>
-                  </>
-                ) : (
-                  'Bayar Sekarang'
-                )}
-              </button>
-            ) : (
-              <button
-                type="submit"
-                className="flex-1 rounded-lg bg-primary-600 py-3 font-semibold text-white hover:bg-primary-700 disabled:bg-gray-400"
-                disabled={
-                  isPending ||
-                  (paymentMethod === 'cash' && Number(amountReceived) < total)
-                }
-              >
-                {isPending ? 'Memproses...' : 'Konfirmasi'}
-              </button>
-            )}
+            <button
+              type="submit"
+              className="flex-1 rounded-lg bg-blue-600 py-3 font-semibold text-white hover:bg-blue-700 disabled:bg-gray-400"
+              disabled={isPending || (paymentMethod === 'cash' && Number(amountReceived) < total)}
+            >
+              {isPending ? 'Memproses...' : paymentMethod === 'cash' ? 'Konfirmasi' : 'Bayar Sekarang'}
+            </button>
           </div>
         </form>
       </div>

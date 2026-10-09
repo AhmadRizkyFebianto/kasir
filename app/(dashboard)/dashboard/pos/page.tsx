@@ -51,6 +51,39 @@ export default function POSPage() {
 
   const total = cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
 
+  const handleCheckout = async (paymentMethod: string, customer: any) => {
+    try {
+      const response = await fetch("/api/orders", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          items: cartItems,
+          payment_method: paymentMethod,
+          customer: customer || { firstName: "Guest", email: "", phone: "" },
+        }),
+      });
+
+      const result = await response.json();
+
+      if (result.success) {
+        // If Midtrans payment, redirect to payment page
+        if (paymentMethod === "midtrans" && result.midtransToken) {
+          window.location.href = `/payment/pay?order_id=${result.orderId}&guest_name=${encodeURIComponent(customer?.firstName || "Guest")}&guest_email=${encodeURIComponent(customer?.email || "")}&guest_phone=${encodeURIComponent(customer?.phone || "")}&amount=${total}`;
+        } else {
+          // For other payment methods, redirect to order details
+          window.location.href = `/dashboard/orders/${result.orderId}`;
+        }
+      } else {
+        alert(result.error || "Failed to create order");
+      }
+    } catch (error) {
+      console.error("Checkout error:", error);
+      alert("Failed to process checkout");
+    }
+  };
+
   if (isLoading) {
     return <div className="flex h-96 items-center justify-center"><div className="h-8 w-8 animate-spin rounded-full border-4 border-blue-600 border-r-transparent" /></div>;
   }
@@ -93,7 +126,13 @@ export default function POSPage() {
         </div>
       </div>
 
-      <PaymentModal isOpen={isPaymentOpen} onClose={() => setIsPaymentOpen(false)} items={cartItems} total={total} />
+      <PaymentModal 
+        isOpen={isPaymentOpen} 
+        onClose={() => setIsPaymentOpen(false)} 
+        items={cartItems} 
+        total={total} 
+        onCheckout={handleCheckout}
+      />
     </>
   );
 }
