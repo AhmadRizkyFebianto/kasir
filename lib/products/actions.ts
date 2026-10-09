@@ -3,44 +3,62 @@
 import { createClient } from '@/lib/supabase/server';
 import { revalidatePath } from 'next/cache';
 
-export async function createProduct(formData: FormData) {
+type ProductFormData = {
+  name: string;
+  category_id: string;
+  price: number;
+  stock?: number;
+  description?: string;
+  is_active?: boolean;
+};
+
+type CreateUpdateResult = { error?: string } | undefined;
+
+export async function createProduct(formData: FormData): Promise<void | undefined> {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   
-  if (!user) return { error: 'Unauthorized' };
+  if (!user) {
+    console.error('Unauthorized create attempt');
+    return;
+  }
 
   try {
     const name = String(formData.get('name') || '');
     const category_id = String(formData.get('category_id') || '');
     const price = Number(formData.get('price') || 0);
     const stock = Number(formData.get('stock') || 0);
+    const description = String(formData.get('description') || '');
     const is_active = formData.get('is_active') === 'on';
 
     if (!name || !category_id || price <= 0) {
-      return { error: 'Nama, kategori, dan harga wajib diisi' };
+      console.error('Validation error: name, category, and price are required');
+      return;
     }
 
     const { error } = await supabase
       .from('products')
-      .insert({ name, category_id, price, stock, is_active });
+      .insert({ name, category_id, price, stock, description, is_active });
 
     if (error) {
       console.error('Create product error:', error);
-      return { error: 'Failed to create product' };
+      return;
     }
 
     revalidatePath('/dashboard/products');
   } catch (error) {
     console.error('Create product error:', error);
-    return { error: 'An error occurred while creating product' };
   }
 }
 
-export async function updateProduct(formData: FormData) {
+export async function updateProduct(formData: FormData): Promise<void | undefined> {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   
-  if (!user) return { error: 'Unauthorized' };
+  if (!user) {
+    console.error('Unauthorized update attempt');
+    return;
+  }
 
   try {
     const id = String(formData.get('id') || '');
@@ -48,32 +66,38 @@ export async function updateProduct(formData: FormData) {
     const category_id = String(formData.get('category_id') || '');
     const price = Number(formData.get('price') || 0);
     const stock = Number(formData.get('stock') || 0);
+    const description = String(formData.get('description') || '');
     const is_active = formData.get('is_active') === 'on';
 
-    if (!id) return { error: 'Product ID is required' };
+    if (!id) {
+      console.error('Validation error: product ID is required');
+      return;
+    }
 
     const { error } = await supabase
       .from('products')
-      .update({ name, category_id, price, stock, is_active })
+      .update({ name, category_id, price, stock, description, is_active })
       .eq('id', id);
 
     if (error) {
       console.error('Update product error:', error);
-      return { error: 'Failed to update product' };
+      return;
     }
 
     revalidatePath('/dashboard/products');
   } catch (error) {
     console.error('Update product error:', error);
-    return { error: 'An error occurred while updating product' };
   }
 }
 
-export async function deleteProduct(id: string) {
+export async function deleteProduct(id: string): Promise<void> {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   
-  if (!user) return { error: 'Unauthorized' };
+  if (!user) {
+    console.error('Unauthorized delete attempt');
+    return;
+  }
 
   try {
     const { error } = await supabase
@@ -83,13 +107,11 @@ export async function deleteProduct(id: string) {
 
     if (error) {
       console.error('Delete product error:', error);
-      return { error: 'Failed to delete product' };
     }
 
     revalidatePath('/dashboard/products');
   } catch (error) {
     console.error('Delete product error:', error);
-    return { error: 'An error occurred while deleting product' };
   }
 }
 

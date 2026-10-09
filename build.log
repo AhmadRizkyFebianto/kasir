@@ -1,0 +1,54 @@
+﻿
+> kasir@1.0.0 build
+> next build
+
+Ôû▓ Next.js 16.2.12 (Turbopack)
+- Environments: .env.local, .env
+
+node.exe : ÔÜá The "middleware" file convention is deprecated. Please use "proxy" instead. Learn more: https://nextjs.org/docs/messages/middleware-to-proxy
+At line:1 char:1
++ & "C:\Users\arizz\AppData\Local\Programs\FlyEnv-Data\env\node/node.ex ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (ÔÜá The "middle...leware-to-proxy:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+  Creating an optimized production build ...
+Ô£ô Compiled successfully in 6.1s
+  Running TypeScript ...
+  Finished TypeScript in 4.6s ...
+  Collecting page data using 15 workers ...
+  Generating static pages using 15 workers (0/14) ...
+  Generating static pages using 15 workers (3/14) 
+  Generating static pages using 15 workers (6/14) 
+  Generating static pages using 15 workers (10/14) 
+Ô£ô Generating static pages using 15 workers (14/14) in 478ms
+  Finalizing page optimization ...
+
+Route (app)
+Ôöî Ôùï /
+Ôö£ Ôùï /_not-found
+Ôö£ ãÆ /api/midtrans
+Ôö£ ãÆ /api/midtrans/[orderId]/approve
+Ôö£ ãÆ /api/midtrans/[orderId]/cancel
+Ôö£ ãÆ /api/midtrans/[orderId]/refund
+Ôö£ ãÆ /api/webhooks/midtrans
+Ôö£ ãÆ /dashboard
+Ôö£ ãÆ /dashboard/orders
+Ôö£ ãÆ /dashboard/orders/[id]
+Ôö£ ãÆ /dashboard/pos
+Ôö£ ãÆ /dashboard/products
+Ôö£ ãÆ /dashboard/products/[id]
+Ôö£ ãÆ /dashboard/products/[id]/edit
+Ôö£ ãÆ /dashboard/products/new
+Ôö£ ãÆ /dashboard/reports
+Ôö£ ãÆ /dashboard/settings
+Ôö£ ãÆ /dashboard/users
+Ôö£ Ôùï /login
+Ôöö Ôùï /register
+
+
+ãÆ Proxy (Middleware)
+
+Ôùï  (Static)   prerendered as static content
+ãÆ  (Dynamic)  server-rendered on demand
+
