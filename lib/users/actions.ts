@@ -10,7 +10,9 @@ export async function createUser(formData: FormData) {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   
-  if (!user) return { error: 'Unauthorized' };
+  if (!user) {
+    redirect('/dashboard/users');
+  }
 
   try {
     const email = String(formData.get('email') || '');
@@ -19,7 +21,7 @@ export async function createUser(formData: FormData) {
     const password = String(formData.get('password') || '');
 
     if (!email || !full_name || !password) {
-      return { error: 'Semua field wajib diisi' };
+      redirect('/dashboard/users');
     }
 
     // Create user in auth
@@ -36,7 +38,7 @@ export async function createUser(formData: FormData) {
 
     if (authError) {
       console.error('Auth error:', authError);
-      return { error: authError.message };
+      redirect('/dashboard/users');
     }
 
     // Insert profile
@@ -46,14 +48,14 @@ export async function createUser(formData: FormData) {
 
     if (profileError) {
       console.error('Profile error:', profileError);
-      return { error: 'Failed to create profile' };
+      redirect('/dashboard/users');
     }
 
     revalidatePath('/dashboard/users');
     redirect('/dashboard/users');
   } catch (error) {
     console.error('Create user error:', error);
-    return { error: 'An error occurred while creating user' };
+    redirect('/dashboard/users');
   }
 }
 
@@ -61,14 +63,18 @@ export async function updateUser(formData: FormData) {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   
-  if (!user) return { error: 'Unauthorized' };
+  if (!user) {
+    redirect('/dashboard/users');
+  }
 
   try {
     const id = String(formData.get('id') || '');
     const full_name = String(formData.get('full_name') || '');
     const role = String(formData.get('role') || 'kasir') as UserRole;
 
-    if (!id) return { error: 'User ID is required' };
+    if (!id) {
+      redirect('/dashboard/users');
+    }
 
     // Update auth metadata
     const { error: authError } = await supabase.auth.updateUser({
@@ -77,7 +83,7 @@ export async function updateUser(formData: FormData) {
 
     if (authError) {
       console.error('Auth update error:', authError);
-      return { error: authError.message };
+      redirect('/dashboard/users');
     }
 
     // Update profile
@@ -88,14 +94,14 @@ export async function updateUser(formData: FormData) {
 
     if (profileError) {
       console.error('Profile update error:', profileError);
-      return { error: 'Failed to update profile' };
+      redirect('/dashboard/users');
     }
 
     revalidatePath('/dashboard/users');
     redirect('/dashboard/users');
   } catch (error) {
     console.error('Update user error:', error);
-    return { error: 'An error occurred while updating user' };
+    redirect('/dashboard/users');
   }
 }
 
