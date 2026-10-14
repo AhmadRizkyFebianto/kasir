@@ -1,4 +1,4 @@
-import { createCategory } from "@/lib/products/actions";
+import { createCategory } from "@/lib/categories/actions";
 import Link from "next/link";
 import { ArrowLeft, Plus } from "lucide-react";
 
@@ -65,3 +65,4 @@ export default async function NewCategoryPage() {
     </div>
   );
 }
+

@@ -2,6 +2,7 @@
 
 import { createClient } from '@/lib/supabase/server';
 import { revalidatePath } from 'next/cache';
+import { redirect } from 'next/navigation';
 
 type ProductFormData = {
   name: string;
@@ -12,7 +13,7 @@ type ProductFormData = {
   is_active?: boolean;
 };
 
-type CreateUpdateResult = { error?: string } | undefined;
+// Compatibility type, no longer used (redirect() used instead)
 
 export async function createProduct(formData: FormData): Promise<void | undefined> {
   const supabase = await createClient();
@@ -20,7 +21,7 @@ export async function createProduct(formData: FormData): Promise<void | undefine
   
   if (!user) {
     console.error('Unauthorized create attempt');
-    return;
+    redirect('/login');
   }
 
   try {
@@ -33,7 +34,7 @@ export async function createProduct(formData: FormData): Promise<void | undefine
 
     if (!name || !category_id || price <= 0) {
       console.error('Validation error: name, category, and price are required');
-      return;
+      redirect('/dashboard/products/new?error=validation_failed');
     }
 
     const { error } = await supabase
@@ -42,12 +43,14 @@ export async function createProduct(formData: FormData): Promise<void | undefine
 
     if (error) {
       console.error('Create product error:', error);
-      return;
+      redirect('/dashboard/products/new?error=creation_failed');
     }
 
     revalidatePath('/dashboard/products');
+    redirect('/dashboard/products?success=created');
   } catch (error) {
     console.error('Create product error:', error);
+    redirect('/dashboard/products/new?error=creation_failed');
   }
 }
 
@@ -57,7 +60,7 @@ export async function updateProduct(formData: FormData): Promise<void | undefine
   
   if (!user) {
     console.error('Unauthorized update attempt');
-    return;
+    redirect('/login');
   }
 
   try {
@@ -71,7 +74,7 @@ export async function updateProduct(formData: FormData): Promise<void | undefine
 
     if (!id) {
       console.error('Validation error: product ID is required');
-      return;
+      redirect('/dashboard/products?error=validation_failed');
     }
 
     const { error } = await supabase
@@ -81,12 +84,14 @@ export async function updateProduct(formData: FormData): Promise<void | undefine
 
     if (error) {
       console.error('Update product error:', error);
-      return;
+      redirect('/dashboard/products?error=update_failed');
     }
 
     revalidatePath('/dashboard/products');
+    redirect('/dashboard/products?success=updated');
   } catch (error) {
     console.error('Update product error:', error);
+    redirect('/dashboard/products?error=update_failed');
   }
 }
 
@@ -96,7 +101,7 @@ export async function deleteProduct(id: string): Promise<void> {
   
   if (!user) {
     console.error('Unauthorized delete attempt');
-    return;
+    redirect('/login');
   }
 
   try {
@@ -107,11 +112,14 @@ export async function deleteProduct(id: string): Promise<void> {
 
     if (error) {
       console.error('Delete product error:', error);
+      redirect('/dashboard/products?error=delete_failed');
     }
 
     revalidatePath('/dashboard/products');
+    redirect('/dashboard/products?success=deleted');
   } catch (error) {
     console.error('Delete product error:', error);
+    redirect('/dashboard/products?error=delete_failed');
   }
 }
 
@@ -149,118 +157,3 @@ export async function getProductCategories() {
   return data;
 }
 
-export async function createCategory(formData: FormData): Promise<void | undefined> {
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-
-  if (!user) {
-    console.error('Unauthorized category creation attempt');
-    return;
-  }
-
-  try {
-    const name = String(formData.get('name') || '');
-    const description = String(formData.get('description') || '');
-
-    if (!name) {
-      console.error('Validation error: category name is required');
-      return;
-    }
-
-    const { error } = await supabase
-      .from('product_categories')
-      .insert({ name, description });
-
-    if (error) {
-      console.error('Create category error:', error);
-      return;
-    }
-
-    revalidatePath('/dashboard/categories');
-  } catch (error) {
-    console.error('Create category error:', error);
-  }
-}
-
-export async function updateCategory(formData: FormData): Promise<void | undefined> {
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-
-  if (!user) {
-    console.error('Unauthorized category update attempt');
-    return;
-  }
-
-  try {
-    const id = String(formData.get('id') || '');
-    const name = String(formData.get('name') || '');
-    const description = String(formData.get('description') || '');
-
-    if (!id) {
-      console.error('Validation error: category ID is required');
-      return;
-    }
-
-    const { error } = await supabase
-      .from('product_categories')
-      .update({ name, description })
-      .eq('id', id);
-
-    if (error) {
-      console.error('Update category error:', error);
-      return;
-    }
-
-    revalidatePath('/dashboard/categories');
-  } catch (error) {
-    console.error('Update category error:', error);
-  }
-}
-
-export async function deleteCategory(id: string): Promise<void> {
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-
-  if (!user) {
-    console.error('Unauthorized category deletion attempt');
-    return;
-  }
-
-  try {
-    const { error } = await supabase
-      .from('product_categories')
-      .delete()
-      .eq('id', id);
-
-    if (error) {
-      console.error('Delete category error:', error);
-    }
-
-    revalidatePath('/dashboard/categories');
-  } catch (error) {
-    console.error('Delete category error:', error);
-  }
-}
-
-export async function getCategory(id: string) {
-  const supabase = await createClient();
-
-  const { data } = await supabase
-    .from('product_categories')
-    .select('*')
-    .eq('id', id)
-    .single();
-
-  return data;
-}
-
-export async function getCategories() {
-  const supabase = await createClient();
-
-  const { data } = await supabase
-    .from('product_categories')
-    .select('*')
-    .order('name', { ascending: true });
-
-  return data;
-}

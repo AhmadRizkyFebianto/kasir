@@ -1,4 +1,4 @@
-import { getCategory, deleteCategory } from "@/lib/products/actions";
+import { getCategory, deleteCategory } from '@/lib/categories/actions';
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft, Trash2, Edit } from "lucide-react";

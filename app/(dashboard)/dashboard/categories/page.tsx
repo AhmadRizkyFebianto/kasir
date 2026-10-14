@@ -1,5 +1,5 @@
 import { Suspense } from "react";
-import { getCategories, deleteCategory } from "@/lib/products/actions";
+import { getCategories, deleteCategory } from "@/lib/categories/actions";
 import Link from "next/link";
 import { Plus, Edit, Trash2 } from "lucide-react";
 
@@ -85,3 +85,4 @@ export default function CategoriesWrapper() {
     </Suspense>
   );
 }
+

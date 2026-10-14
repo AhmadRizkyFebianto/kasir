@@ -1,4 +1,4 @@
-import { updateCategory, getCategory } from "@/lib/products/actions";
+import { updateCategory, getCategory } from '@/lib/categories/actions';
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft, Save } from "lucide-react";
