@@ -149,6 +149,25 @@ export async function deleteUser(id: string) {
   }
 }
 
+export async function deleteUserAction(formData: FormData) {
+  'use server';
+  const id = String(formData.get('id') || '');
+  
+  if (!id) {
+    redirect('/dashboard/users');
+  }
+
+  const result = await deleteUser(id);
+  
+  if (result?.error) {
+    console.error('Delete error:', result.error);
+    redirect('/dashboard/users');
+  }
+  
+  revalidatePath('/dashboard/users');
+  redirect('/dashboard/users');
+}
+
 export async function getUser(id: string) {
   const supabase = await createClient();
 

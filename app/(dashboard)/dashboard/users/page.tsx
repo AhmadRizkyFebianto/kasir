@@ -1,138 +1,116 @@
-"use client";
+import { Suspense } from "react";
+import { getUsers, deleteUserAction } from "@/lib/users/actions";
+import Link from "next/link";
+import { Plus, Edit, Trash2, Search } from "lucide-react";
 
-import { useEffect, useState } from "react";
-import { Search } from "lucide-react";
-import { Cart, CartItem } from "@/components/pos/Cart";
-import { PaymentModal } from "@/components/pos/PaymentModal";
-import { formatCurrency } from "@/lib/utils";
-import { createClient } from "@/lib/supabase/client";
-
-export default function POSPage() {
-  const [products, setProducts] = useState<any[]>([]);
-  const [categories, setCategories] = useState<any[]>([]);
-  const [selectedCategory, setSelectedCategory] = useState("all");
-  const [searchQuery, setSearchQuery] = useState("");
-  const [cartItems, setCartItems] = useState<CartItem[]>([]);
-  const [isPaymentOpen, setIsPaymentOpen] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
-
-  useEffect(() => {
-    async function fetchData() {
-      const supabase = createClient();
-      const [{ data: productRows }, { data: categoryRows }] = await Promise.all([
-        supabase.from("products").select("id, category_id, name, price, stock, image_url").eq("is_active", true).order("name"),
-        supabase.from("product_categories").select("id, name").order("name"),
-      ]);
-      setProducts(productRows || []);
-      setCategories([{ id: "all", name: "Semua" }, ...(categoryRows || [])]);
-      setIsLoading(false);
-    }
-    fetchData();
-  }, []);
-
-  const filteredProducts = products.filter((product) => {
-    const matchesCategory = selectedCategory === "all" || product.category_id === selectedCategory;
-    const matchesSearch = !searchQuery || product.name.toLowerCase().includes(searchQuery.toLowerCase());
-    return matchesCategory && matchesSearch;
-  });
-
-  const handleAddToCart = (product: any) => {
-    setCartItems((items) => {
-      const existing = items.find((item) => item.id === product.id);
-      if (existing) return items.map((item) => item.id === product.id ? { ...item, quantity: item.quantity + 1 } : item);
-      return [...items, { id: product.id, name: product.name, price: Number(product.price), quantity: 1 }];
-    });
-  };
-
-  const handleUpdateQuantity = (id: string, quantity: number) => {
-    if (quantity <= 0) return setCartItems((items) => items.filter((item) => item.id !== id));
-    setCartItems((items) => items.map((item) => item.id === id ? { ...item, quantity } : item));
-  };
-
-  const total = cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
-
-  const handleCheckout = async (paymentMethod: string, customer: any) => {
-    try {
-      const response = await fetch("/api/orders", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          items: cartItems,
-          payment_method: paymentMethod,
-          customer: customer || { firstName: "Guest", email: "", phone: "" },
-        }),
-      });
-
-      const result = await response.json();
-
-      if (result.success) {
-        // If Midtrans payment, redirect to payment page
-        if (paymentMethod === "midtrans" && result.midtransToken) {
-          window.location.href = `/payment/pay?order_id=${result.orderId}&guest_name=${encodeURIComponent(customer?.firstName || "Guest")}&guest_email=${encodeURIComponent(customer?.email || "")}&guest_phone=${encodeURIComponent(customer?.phone || "")}&amount=${total}`;
-        } else {
-          // For other payment methods, redirect to order details
-          window.location.href = `/dashboard/orders/${result.orderId}`;
-        }
-      } else {
-        alert(result.error || "Failed to create order");
-      }
-    } catch (error) {
-      console.error("Checkout error:", error);
-      alert("Failed to process checkout");
-    }
-  };
-
-  if (isLoading) {
-    return <div className="flex h-96 items-center justify-center"><div className="h-8 w-8 animate-spin rounded-full border-4 border-blue-600 border-r-transparent" /></div>;
-  }
+async function UsersPage() {
+  const users = await getUsers();
 
   return (
-    <>
-      <div className="flex h-[calc(100vh-8rem)] gap-6">
-        <div className="flex flex-1 flex-col overflow-hidden rounded-lg border-2 border-slate-200 bg-white shadow-md">
-          <div className="border-b border-slate-200 p-4">
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-400" />
-              <input value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} placeholder="Cari produk..." className="w-full rounded-lg border border-slate-300 py-2 pl-10 pr-4 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200" />
-            </div>
-            <div className="mt-4 flex gap-2 overflow-x-auto pb-2">
-              {categories.map((category) => (
-                <button key={category.id} onClick={() => setSelectedCategory(category.id)} className={`whitespace-nowrap rounded-lg px-4 py-2 text-sm font-medium transition-colors ${selectedCategory === category.id ? "bg-blue-600 text-white" : "bg-gray-100 text-gray-700 hover:bg-blue-50 hover:text-blue-700"}`}>
-                  {category.name}
-                </button>
-              ))}
-            </div>
-          </div>
+    <div className="p-6">
+      <div className="flex items-center justify-between mb-6">
+        <h1 className="text-2xl font-bold text-gray-900">Manajemen Pengguna</h1>
+        <Link
+          href="/dashboard/users/new"
+          className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-semibold shadow-md"
+        >
+          <Plus className="h-5 w-5" />
+          Tambah Pengguna
+        </Link>
+      </div>
 
-          <div className="flex-1 overflow-y-auto p-4">
-            <div className="grid grid-cols-2 gap-4 lg:grid-cols-3 xl:grid-cols-4">
-              {filteredProducts.map((product) => (
-                <button key={product.id} onClick={() => handleAddToCart(product)} className="group rounded-lg border-2 border-slate-200 p-4 text-left transition-all hover:border-blue-500 hover:shadow-md">
-                  <div className="mb-3 aspect-square w-full rounded-lg bg-gray-100" />
-                  <h3 className="font-medium text-gray-900 group-hover:text-blue-600">{product.name}</h3>
-                  <p className="mt-1 text-sm font-semibold text-blue-600">{formatCurrency(product.price)}</p>
-                  <p className="mt-1 text-xs text-gray-500">Stock: {product.stock}</p>
-                </button>
-              ))}
-            </div>
-            {filteredProducts.length === 0 && <div className="flex h-full items-center justify-center text-gray-500">Produk tidak ditemukan</div>}
-          </div>
-        </div>
-
-        <div className="w-96 overflow-hidden rounded-lg border-2 border-black bg-white shadow-md">
-          <Cart items={cartItems} onUpdateQuantity={handleUpdateQuantity} onRemoveItem={(id) => setCartItems((items) => items.filter((item) => item.id !== id))} onCheckout={() => setIsPaymentOpen(true)} />
+      <div className="mb-6">
+        <div className="relative max-w-md">
+          <Search className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-400" />
+          <input
+            type="text"
+            placeholder="Cari nama atau email..."
+            className="w-full rounded-lg border border-gray-300 py-2 pl-10 pr-4 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200"
+          />
         </div>
       </div>
 
-      <PaymentModal 
-        isOpen={isPaymentOpen} 
-        onClose={() => setIsPaymentOpen(false)} 
-        items={cartItems} 
-        total={total} 
-        onCheckout={handleCheckout}
-      />
-    </>
+      <div className="bg-white rounded-lg border-2 border-gray-200 shadow-md overflow-hidden">
+        <div className="overflow-x-auto">
+          <table className="w-full">
+            <thead className="bg-blue-600 text-white">
+              <tr>
+                <th className="px-6 py-4 text-left font-semibold">Nama</th>
+                <th className="px-6 py-4 text-left font-semibold">Email</th>
+                <th className="px-6 py-4 text-left font-semibold">Role</th>
+                <th className="px-6 py-4 text-right font-semibold">Aksi</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-gray-200">
+              {users && users.length > 0 ? (
+                users.map((user: any) => (
+                  <tr key={user.id} className="hover:bg-gray-50">
+                    <td className="px-6 py-4 font-semibold text-gray-900">{user.full_name}</td>
+                    <td className="px-6 py-4 text-gray-700">{user.email}</td>
+                    <td className="px-6 py-4">
+                      <span
+                        className={`px-3 py-1 rounded text-sm font-semibold ${
+                          user.role === "admin"
+                            ? "bg-purple-50 text-purple-700 border border-purple-200"
+                            : "bg-blue-50 text-blue-700 border border-blue-200"
+                        }`}
+                      >
+                        {user.role === "admin" ? "Admin" : "Kasir"}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 text-right">
+                      <div className="flex items-center justify-end gap-2">
+                        <Link
+                          href={`/dashboard/users/${user.id}/edit`}
+                          className="px-3 py-1.5 rounded-lg border-2 border-yellow-400 bg-yellow-50 text-yellow-700 hover:bg-yellow-100 hover:border-yellow-600 font-semibold text-sm shadow-sm"
+                        >
+                          <Edit className="h-4 w-4 inline mr-1" />
+                          Edit
+                        </Link>
+                        <form action={deleteUserAction}>
+                          <input type="hidden" name="id" value={user.id} />
+                          <button
+                            type="submit"
+                            className="px-3 py-1.5 rounded-lg border-2 border-red-400 bg-red-50 text-red-700 hover:bg-red-100 hover:border-red-600 font-semibold text-sm shadow-sm"
+                            onClick={(e) => {
+                              if (!confirm("Yakin ingin menghapus pengguna ini?")) {
+                                e.preventDefault();
+                              }
+                            }}
+                          >
+                            <Trash2 className="h-4 w-4 inline mr-1" />
+                            Hapus
+                          </button>
+                        </form>
+                      </div>
+                    </td>
+                  </tr>
+                ))
+              ) : (
+                <tr>
+                  <td colSpan={4} className="px-6 py-8 text-center text-gray-500">
+                    Belum ada pengguna
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export default function UsersWrapper() {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex items-center justify-center min-h-screen">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+        </div>
+      }
+    >
+      <UsersPage />
+    </Suspense>
   );
 }
