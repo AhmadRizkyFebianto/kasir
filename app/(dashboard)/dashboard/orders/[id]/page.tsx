@@ -169,4 +169,4 @@ async function OrderDetail({ params }: { params: { id: string } }) {
   );
 }
 
-export default OrderDetail;
+export default OrderDetail;d
